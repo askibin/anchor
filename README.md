@@ -1,177 +1,233 @@
-# Anchor ⚓
+# Changelog
 
-[![Build Status](https://travis-ci.com/project-serum/anchor.svg?branch=master)](https://travis-ci.com/project-serum/anchor)
-[![Docs](https://img.shields.io/badge/docs-tutorials-orange)](https://project-serum.github.io/anchor/)
-[![Chat](https://img.shields.io/discord/739225212658122886?color=blueviolet)](https://discord.com/channels/739225212658122886)
-[![License](https://img.shields.io/github/license/project-serum/anchor?color=ff69b4)](https://opensource.org/licenses/Apache-2.0)
+All notable changes to this project will be documented in this file.
 
-Anchor is a framework for Solana's [Sealevel](https://medium.com/solana-labs/sealevel-parallel-processing-thousands-of-smart-contracts-d814b378192) runtime providing several convenient developer tools.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- Rust eDSL for writing Solana programs
-- [IDL](https://en.wikipedia.org/wiki/Interface_description_language) specification
-- TypeScript package for generating clients from IDL
-- CLI and workspace management for developing complete applications
+**Note:** Version 0 of Semantic Versioning is handled differently from version 1 and above.
+The minor version will be incremented upon a breaking change and the patch version will be
+incremented for features.
 
-If you're familiar with developing in Ethereum's [Solidity](https://docs.soliditylang.org/en/v0.7.4/), [Truffle](https://www.trufflesuite.com/), [web3.js](https://github.com/ethereum/web3.js) or Parity's [Ink!](https://github.com/paritytech/ink), then the experience will be familiar. Although the DSL syntax and semantics are targeted at Solana, the high level flow of writing RPC request handlers, emitting an IDL, and generating clients from IDL is the same.
+## [Unreleased]
 
-## Getting Started
+## [0.11.0] - 2021-07-03
 
-For a quickstart guide and in depth tutorials, see the guided [documentation](https://project-serum.github.io/anchor/getting-started/introduction.html).
-To jump straight to examples, go [here](https://github.com/project-serum/anchor/tree/master/examples). For the latest Rust and TypeScript API documentation, see [docs.rs](https://docs.rs/anchor-lang) and the [typedoc](https://project-serum.github.io/anchor/ts/index.html).
+### Features
 
-## Packages
+* lang: Add fallback functions ([#457](https://github.com/project-serum/anchor/pull/457)).
+* lang: Add feature flag for using the old state account discriminator. This is a temporary flag for those with programs built prior to v0.7.0 but want to use the latest Anchor version. Expect this to be removed in a future version ([#446](https://github.com/project-serum/anchor/pull/446)).
 
-| Package | Description | Version | Docs |
-| :-- | :-- | :--| :-- |
-| `anchor-lang` | Rust primitives for writing programs on Solana | [![Crates.io](https://img.shields.io/crates/v/anchor-lang?color=blue)](https://crates.io/crates/anchor-lang) | [![Docs.rs](https://docs.rs/anchor-lang/badge.svg)](https://docs.rs/anchor-lang) |
-| `anchor-spl` | CPI clients for SPL programs on Solana | ![crates](https://img.shields.io/crates/v/anchor-spl?color=blue) | [![Docs.rs](https://docs.rs/anchor-spl/badge.svg)](https://docs.rs/anchor-spl) |
-| `anchor-client` | Rust client for Anchor programs | ![crates](https://img.shields.io/crates/v/anchor-client?color=blue) | [![Docs.rs](https://docs.rs/anchor-client/badge.svg)](https://docs.rs/anchor-client) |
-| `@project-serum/anchor` | TypeScript client for Anchor programs | [![npm](https://img.shields.io/npm/v/@project-serum/anchor.svg?color=blue)](https://www.npmjs.com/package/@project-serum/anchor) | [![Docs](https://img.shields.io/badge/docs-typedoc-blue)](https://project-serum.github.io/anchor/ts/index.html) |
+### Breaking Changes
 
-## Note
+* cli: Remove `.spec` suffix on TypeScript tests files ([#441](https://github.com/project-serum/anchor/pull/441)).
+* lang: Remove `belongs_to` constraint ([#459](https://github.com/project-serum/anchor/pull/459)).
 
-* **Anchor is in active development, so all APIs are subject to change.**
-* **This code is unaudited. Use at your own risk.**
+## [0.10.0] - 2021-06-27
 
-## Examples
+### Features
 
-Build stateful programs on Solana by defining a state struct with associated
-methods. Here's a classic counter example, where only the designated `authority`
-can increment the count.
+* lang: Add `#[account(address = <expr>)]` constraint for asserting the address of an account ([#400](https://github.com/project-serum/anchor/pull/400)).
+* lang: Add `#[account(init, token = <mint-target>, authority = <token-owner-target>...)]` constraint for initializing SPL token accounts as program derived addresses for the program. Can be used when initialized via `seeds` or `associated` ([#400](https://github.com/project-serum/anchor/pull/400)).
+* lang: Add `associated_seeds!` macro for generating signer seeds for CPIs signed by an `#[account(associated = <target>)]` account ([#400](https://github.com/project-serum/anchor/pull/400)).
+* cli: Add `[scripts]` section to the Anchor.toml for specifying workspace scripts that can be run via `anchor run <script>` ([#400](https://github.com/project-serum/anchor/pull/400)).
+* cli: `[clusters.<network>]` table entries can now also use `{ address = <base58-str>, idl = <filepath-str> }` to specify workspace programs ([#400](https://github.com/project-serum/anchor/pull/400)).
 
-```rust
-#[program]
-mod counter {
+### Breaking Changes
 
-    #[state]
-    pub struct Counter {
-      authority: Pubkey,
-      count: u64,
-    }
+* cli: Remove `--yarn` flag in favor of using `npx` ([#432](https://github.com/project-serum/anchor/pull/432)).
 
-    pub fn new(ctx: Context<Auth>) -> Result<Self> {
-        Ok(Self {
-            auth: *ctx.accounts.authority.key
-        })
-    }
+## [0.9.0] - 2021-06-15
 
-    pub fn increment(&mut self, ctx: Context<Auth>) -> Result<()> {
-        if &self.authority != ctx.accounts.authority.key {
-            return Err(ErrorCode::Unauthorized.into());
-        }
+### Features
 
-        self.count += 1;
+* lang: Instruction data is now available to accounts constraints ([#386](https://github.com/project-serum/anchor/pull/386)).
+* lang: Initialize program derived addresses with accounts constraints ([#386](https://github.com/project-serum/anchor/pull/386)).
 
-        Ok(())
-    }
-}
+### Breaking Changes
 
-#[derive(Accounts)]
-pub struct Auth<'info> {
-    #[account(signer)]
-    authority: AccountInfo<'info>,
-}
+* lang: Event field names in IDLs are now mixed case. ([#379](https://github.com/project-serum/anchor/pull/379)).
+* lang: Accounts trait now accepts an additional `&[u8]` parameter ([#386](https://github.com/project-serum/anchor/pull/386)).
 
-#[error]
-pub enum ErrorCode {
-    #[msg("You are not authorized to perform this action.")]
-    Unauthorized,
-}
-```
+## [0.8.0] - 2021-06-10
 
-Additionally, one can utilize the full power of Solana's parallel execution model by
-keeping the program stateless and working with accounts directly. The above example
-can be rewritten as follows.
+### Features
 
-```rust
-use anchor::prelude::*;
+* cli: Add `--program-name` option for build command to build a single program at a time ([#362](https://github.com/project-serum/anchor/pull/362)).
+* cli, client: Parse custom cluster urls from str ([#369](https://github.com/project-serum/anchor/pull/369)).
+* cli, client, lang: Update solana toolchain to v1.7.1 ([#368](https://github.com/project-serum/anchor/pull/369)).
+* ts: Instruction decoding and formatting ([#372](https://github.com/project-serum/anchor/pull/372)).
+* lang: Add `#[account(close = <destination>)]` constraint for closing accounts and sending the rent exemption lamports to a specified destination account ([#371](https://github.com/project-serum/anchor/pull/371)).
 
-#[program]
-mod counter {
-    use super::*;
+### Fixes
 
-    pub fn initialize(ctx: Context<Initialize>, authority: Pubkey) -> Result<()> {
-        let counter = &mut ctx.accounts.counter;
+* lang: Allows one to use `remaining_accounts` with `CpiContext` by implementing the `ToAccountMetas` trait on `CpiContext` ([#351](https://github.com/project-serum/anchor/pull/351/files)).
 
-        counter.authority = authority;
-        counter.count = 0;
+### Breaking
 
-        Ok(())
-    }
+* lang, ts: Framework defined error codes are introduced, reserving error codes 0-300 for Anchor, and 300 and up for user defined error codes ([#354](https://github.com/project-serum/anchor/pull/354)).
 
-    pub fn increment(ctx: Context<Increment>) -> Result<()> {
-        let counter = &mut ctx.accounts.counter;
+## [0.7.0] - 2021-05-31
 
-        counter += 1;
+### Features
 
-        Ok(())
-    }
-}
+* cli: Add global options for override Anchor.toml values ([#313](https://github.com/project-serum/anchor/pull/313)).
+* spl: Add `SetAuthority` instruction ([#307](https://github.com/project-serum/anchor/pull/307/files)).
+* spl: Add init and close open orders instructions ([#245](https://github.com/project-serum/anchor/pull/245)).
+* lang: `constraint = <expression>` added as a replacement for (the now deprecated) string literal constraints ([#341](https://github.com/project-serum/anchor/pull/341)).
+* lang: Span information is now preserved, providing informative compiler error messages ([#341](https://github.com/project-serum/anchor/pull/341)).
+* ts: Address metadata is now optional for `anchor.workspace` clients ([#310](https://github.com/project-serum/anchor/pull/310)).
 
-#[derive(Accounts)]
-pub struct Initialize<'info> {
-    #[account(init)]
-    pub counter: ProgramAccount<'info, Counter>,
-    pub rent: Sysvar<'info, Rent>,
-}
+### Breaking Changes
 
-#[derive(Accounts)]
-pub struct Increment<'info> {
-    #[account(mut, has_one = authority)]
-    pub counter: ProgramAccount<'info, Counter>,
-    #[account(signer)]
-    pub authority: AccountInfo<'info>,
-}
+* ts: Retrieving deserialized accounts from the `<program>.account.<my-account>` and `<program>.state` namespaces now require explicitly invoking the `fetch` API. For example, `program.account.myAccount(<adddress>)` and `program.state()` is now `program.account.myAccount.fetch(<address>)` and `program.state.fetch()` ([#322](https://github.com/project-serum/anchor/pull/322)).
+* lang: `#[account(associated)]` now requires `init` to be provided to create an associated account. If not provided, then the address will be assumed to exist, and a constraint will be added to ensure the correctness of the address ([#318](https://github.com/project-serum/anchor/pull/318)).
+* lang, ts: Change account discriminator pre-image of the `#[state]` account discriminator to be namespaced by "state:" ([#320](https://github.com/project-serum/anchor/pull/320)).
+* lang, ts: Change domain delimiters for the pre-image of the instruciton sighash to be a single colon `:` to be consistent with accounts ([#321](https://github.com/project-serum/anchor/pull/321)).
+* lang: Associated constraints no longer automatically implement `mut` ([#341](https://github.com/project-serum/anchor/pull/341)).
+* lang: Associated `space` constraints must now be literal integers instead of literal strings ([#341](https://github.com/project-serum/anchor/pull/341)).
 
-#[account]
-pub struct Counter {
-    pub authority: Pubkey,
-    pub count: u64,
-}
+## [0.6.0] - 2021-05-23
 
-#[error]
-pub enum ErrorCode {
-    #[msg("You are not authorized to perform this action.")]
-    Unauthorized,
-}
-```
+### Features
 
-Due to the fact that account sizes on Solana are fixed, some combination of
-the above is often required. For example, one can store store global state
-associated with the entire program in the `#[state]` struct and local
-state assocated with each user in individual `#[account]` structs.
+* ts: Add `program.simulate` namespace ([#266](https://github.com/project-serum/anchor/pull/266)).
+* ts: Introduce `Address` type, allowing one to use Base 58 encoded strings in public APIs ([#304](https://github.com/project-serum/anchor/pull/304)).
+* ts: Replace deprecated `web3.Account` with `web3.Signer` in public APIs ([#296](https://github.com/project-serum/anchor/pull/296)).
+* ts: Generated `anchor.workspace` clients can now be customized per network with `[cluster.<slug>]` in the Anchor.toml ([#308](https://github.com/project-serum/anchor/pull/308)).
+* cli: Add yarn flag to test command ([#267](https://github.com/project-serum/anchor/pull/267)).
+* cli: Add `--skip-build` flag to test command ([301](https://github.com/project-serum/anchor/pull/301)).
+* cli: Add `anchor shell` command to spawn a node shell populated with an Anchor.toml based environment ([#303](https://github.com/project-serum/anchor/pull/303)).
 
-For more, see the [examples](https://github.com/project-serum/anchor/tree/master/examples)
-directory.
+### Breaking Changes
 
-## Contribution
+* cli: The Anchor.toml's `wallet` and `cluster` settings must now be under the `[provider]` table ([#305](https://github.com/project-serum/anchor/pull/305)).
+* ts: Event coder `decode` API changed to decode strings directly instead of buffers ([#292](https://github.com/project-serum/anchor/pull/292)).
+* ts: Event coder `encode` API removed ([#292](https://github.com/project-serum/anchor/pull/292)).
 
-Thank you for your interest in contributing to Anchor! All contributions are welcome no
-matter how big or small. This includes includes (but is not limited to) filing issues,
-adding documentation, fixing bugs, creating examples, and implementing features.
+## [0.5.0] - 2021-05-07
 
-If you'd like to contribute, please claim an issue by commenting, forking, and
-opening a pull request, even if empty. This allows the maintainers to track who
-is working on what issue as to not overlap work. If you're looking to get started,
-check out [good first issues](https://github.com/project-serum/anchor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-or issues where [help is wanted](https://github.com/project-serum/anchor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
-For simple documentation changes, feel free to just open a pull request.
+### Features
 
-If you're considering larger changes or self motivated features, please file an issue
-and engage with the maintainers in [Discord](https://discord.com/channels/739225212658122886).
+* client: Adds support for state instructions ([#248](https://github.com/project-serum/anchor/pull/248)).
+* lang: Add `anchor-debug` feature flag for logging ([#253](https://github.com/project-serum/anchor/pull/253)).
+* ts: Add support for u16 ([#255](https://github.com/project-serum/anchor/pull/255)).
 
-When contributing, please make sure your code adheres to some basic coding guidlines:
+### Breaking Changes
 
-* Code must be formatted with the configured formatters (e.g. rustfmt and prettier).
-* Comment lines should be no longer than 80 characters and written with proper grammar and punctuation.
-* Commit messages should be prefixed with the package(s) they modify. Changes affecting multiple
-  packages should list all packages. In rare cases, changes may omit the package name prefix.
-* All notable changes should be documented in the [Change Log](https://github.com/project-serum/anchor/blob/master/CHANGELOG.md).
+* client: Renames `RequestBuilder::new` to `RequestBuilder::from` ([#248](https://github.com/project-serum/anchor/pull/248)).
+* lang: Renames the generated `instruction::state::Ctor` struct to `instruction::state::New` ([#248](https://github.com/project-serum/anchor/pull/248)).
 
-## License
+## [0.4.5] - 2021-04-29
 
-Anchor is licensed under [Apache 2.0](./LICENSE).
+* spl: Add serum DEX CPI client ([#224](https://github.com/project-serum/anchor/pull/224)).
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in Anchor by you, as defined in the Apache-2.0 license, shall be
-licensed as above, without any additional terms or conditions.
+## [0.4.4] - 2021-04-18
+
+### Features
+
+* lang: Allows one to specify multiple `with` targets when creating associated acconts ([#197](https://github.com/project-serum/anchor/pull/197)).
+* lang, ts: Add array support ([#202](https://github.com/project-serum/anchor/pull/202)).
+* lang: Zero copy deserialization for accounts ([#202](https://github.com/project-serum/anchor/pull/202), [#206](https://github.com/project-serum/anchor/pull/206)).
+* lang, spl, cli, client: Upgrade solana toolchain to 1.6.6 ([#210](https://github.com/project-serum/anchor/pull/210)).
+
+## [0.4.3] - 2021-04-13
+
+### Features
+
+* lang: CPI clients for program state instructions ([#43](https://github.com/project-serum/anchor/pull/43)).
+* lang: Add `#[account(owner = <program>)]` constraint ([#178](https://github.com/project-serum/anchor/pull/178)).
+* lang, cli, ts: Add `#[account(associated = <target>)]` and `#[associated]` attributes for creating associated program accounts within programs. The TypeScript package can fetch these accounts with a new `<program>.account.<account-name>.associated` (and `associatedAddress`) method ([#186](https://github.com/project-serum/anchor/pull/186)).
+
+### Fixes
+
+* lang: Unused `#[account]`s are now parsed into the IDL correctly ([#177](https://github.com/project-serum/anchor/pull/177)).
+
+## [0.4.2] - 2021-04-10
+
+### Features
+
+* cli: Fund Anchor.toml configured wallet when testing ([#164](https://github.com/project-serum/anchor/pull/164)).
+* spl: Add initialize_account instruction for spl tokens ([#166](https://github.com/project-serum/anchor/pull/166)).
+
+## [0.4.1] - 2021-04-06
+
+* cli: Version verifiable docker builder ([#145](https://github.com/project-serum/anchor/pull/145)).
+
+## [0.4.0] - 2021-04-04
+
+### Features
+
+* cli: Specify test files to run ([#118](https://github.com/project-serum/anchor/pull/118)).
+* lang: Allow overriding the `#[state]` account's size ([#121](https://github.com/project-serum/anchor/pull/121)).
+* lang, client, ts: Add event emission and subscriptions ([#89](https://github.com/project-serum/anchor/pull/89)).
+* lang/account: Allow namespacing account discriminators ([#128](https://github.com/project-serum/anchor/pull/128)).
+* cli: TypeScript migrations ([#132](https://github.com/project-serum/anchor/pull/132)).
+* lang: Add `#[account(executable)]` attribute ([#140](https://github.com/project-serum/anchor/pull/140)).
+
+### Breaking Changes
+
+* client: Replace url str with `Cluster` struct when constructing clients ([#89](https://github.com/project-serum/anchor/pull/89)).
+* lang: Changes the account discriminator of `IdlAccount` to be namespaced by `"internal"` ([#128](https://github.com/project-serum/anchor/pull/128)).
+* lang, spl, cli: Upgrade solana toolchain to 1.6.3, a major version upgrade even though only the minor version is incremented. This allows for the removal of `-#![feature(proc_macro_hygiene)]`. ([#139](https://github.com/project-serum/anchor/pull/139)).
+
+## [0.3.0] - 2021-03-12
+
+### Features
+
+* ts: Allow preloading instructions for state rpc transactions ([cf9c84](https://github.com/project-serum/anchor/commit/cf9c847e4144989b5bc1936149d171e90204777b)).
+* ts: Export sighash coder function ([734c75](https://github.com/project-serum/anchor/commit/734c751882f43beec7ea3f0f4d988b502e3f24e4)).
+* cli: Specify programs to embed into local validator genesis via Anchor.toml while testing ([b3803a](https://github.com/project-serum/anchor/commit/b3803aec03fbbae1a794c9aa6a789e6cb58fda99)).
+* cli: Allow skipping the creation of a local validator when testing against localnet ([#93](https://github.com/project-serum/anchor/pull/93)).
+* cli: Adds support for tests with Typescript ([#94](https://github.com/project-serum/anchor/pull/94)).
+* cli: Deterministic and verifiable builds ([#100](https://github.com/project-serum/anchor/pull/100)).
+* cli, lang: Add write buffers for IDL upgrades ([#107](https://github.com/project-serum/anchor/pull/107)).
+
+## Breaking Changes
+
+* lang: Removes `IdlInstruction::Clear` ([#107](https://github.com/project-serum/anchor/pull/107)).
+
+### Fixes
+
+* cli: Propagates mocha test exit status on error ([79b791](https://github.com/project-serum/anchor/commit/79b791ffa85ffae5b6163fa853562aa568650f21)).
+
+## [0.2.1] - 2021-02-11
+
+### Features
+
+* cli: Embed workspace programs into local validator genesis when testing ([733ec3](https://github.com/project-serum/anchor/commit/733ec300b0308e7d007873b0975585d836333fd4)).
+* cli: Stream program logs to `.anchor/program-logs` directory when testing ([ce5ca7](https://github.com/project-serum/anchor/commit/ce5ca7ddab6e0fd579deddcd02094b3f798bbe6a)).
+* spl: Add shared memory api [(d92cb1)](https://github.com/project-serum/anchor/commit/d92cb1516b78696d1257e41d0c5ac6821716300e).
+* lang/attribute/access-control: Allow specifying multiple modifier functions ([845df6](https://github.com/project-serum/anchor/commit/845df6d1960bb544fa0f2e3331ec79cc804edeb6)).
+* lang/syn: Allow state structs that don't have a ctor or impl block (just trait implementations) ([a78000](https://github.com/project-serum/anchor/commit/a7800026833d64579e5b19c90d724ecc20d2a455)).
+* ts: Add instruction method to state namespace ([627c27](https://github.com/project-serum/anchor/commit/627c275e9cdf3dafafcf44473ba8146cc7979d44)).
+* lang/syn, ts: Add support for u128 and i128 ([#83](https://github.com/project-serum/anchor/pull/83)).
+
+## [0.2.0] - 2021-02-08
+
+### Features
+
+* lang: Adds the ability to create and use CPI program interfaces ([#66](https://github.com/project-serum/anchor/pull/66/files?file-filters%5B%5D=)).
+
+### Breaking Changes
+
+* lang, client, ts: Migrate from rust enum based method dispatch to a variant of sighash ([#64](https://github.com/project-serum/anchor/pull/64)).
+
+## [0.1.0] - 2021-01-31
+
+Initial release.
+
+### Includes
+
+* lang: `anchor-lang` crate providing a Rust eDSL for Solana.
+* lang/attribute/access-control: Internal attribute macro for function modifiers.
+* lang/attribute/account: Internal attribute macro for defining Anchor accounts.
+* lang/attribute/error: Internal attribute macro for defining Anchor program errors.
+* lang/attribute/program: Internal attribute macro for defining an Anchor program.
+* lang/attribute/state: Internal attribute macro for defining an Anchor program state struct.
+* lang/derive/accounts: Internal derive macro for defining deserialized account structs.
+* lang/syn: Internal crate for parsing the Anchor eDSL, generating code, and an IDL.
+* spl: `anchor-spl` crate providing CPI clients for Anchor programs.
+* client: `anchor-client` crate providing Rust clients for Anchor programs.
+* ts: `@project-serum/anchor` package for generating TypeScript clients.
+* cli: Command line interface for managing Anchor programs.

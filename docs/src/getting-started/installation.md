@@ -1,7 +1,20 @@
 # Installing Dependencies
 
-To get started, make sure to setup all the prerequisite tools on your local machine
-(an installer has not yet been developed).
+To get started, make sure to setup all the prerequisite tools on your local machine (an installer has not yet been developed).
+
+{% tabs %}
+{% tab title="First Tab" %}
+```
+// Some code
+```
+{% endtab %}
+
+{% tab title="Second Tab" %}
+```
+// Some code2
+```
+{% endtab %}
+{% endtabs %}
 
 ## Install Rust
 
@@ -49,11 +62,10 @@ To install the JavaScript package.
 npm install -g @project-serum/anchor
 ```
 
-Make sure your `NODE_PATH` is set properly so that globally installed modules
-can be resolved.
+Make sure your `NODE_PATH` is set properly so that globally installed modules can be resolved.
 
 ## Minimum version requirements
 
-| Build tool  | Version        |
-|:------------|:---------------|
-| Node.js     | v11.0.0        |
+| Build tool | Version |
+| ---------- | ------- |
+| Node.js    | v11.0.0 |
